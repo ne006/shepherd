@@ -1,0 +1,22 @@
+app:
+  name: test_app
+  children:
+    - name: web
+      children:
+        - name: web_server
+          command: "web_srv"
+          args:
+            - "-p"
+            - "8080"
+            - "-b"
+            - "0.0.0.0"
+            - "-e"
+            - "development"
+    - name: bg_jobs
+      children:
+      - name: bg_server
+        command: "bg_srv"
+        args:
+          - "-e"
+          - "development"
+          
