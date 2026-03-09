@@ -123,6 +123,10 @@ func loadProcess(sourceMap map[string]interface{}, sourceCommand string) (superv
 func loadArgs(sourceArgs interface{}) ([]string, error) {
 	var unitArgs []string
 
+	if sourceArgs == nil {
+		return []string{}, nil
+	}
+
 	if rawArgs, ok := sourceArgs.([]interface{}); ok {
 		for _, arg := range rawArgs {
 			if stringArg, ok := arg.(string); ok {

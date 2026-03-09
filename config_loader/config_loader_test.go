@@ -33,6 +33,11 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 		Children: []supervisor.SupervisionUnit{},
 	}
 
+	cronGroup := supervisor.Group{
+		Name:     "cron",
+		Children: []supervisor.SupervisionUnit{},
+	}
+
 	webServer := supervisor.Process{
 		Name: "web_server",
 
@@ -50,8 +55,19 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 		},
 	}
 
+	cron := supervisor.Process{
+		Name: "cron",
+
+		Cmd: exec.Cmd{
+			Path: "cron",
+			Args: []string{},
+		},
+	}
+
+	cronGroup.Children = []supervisor.SupervisionUnit{cron}
+
 	webGroup.Children = []supervisor.SupervisionUnit{webServer}
-	bgGroup.Children = []supervisor.SupervisionUnit{bgServer}
+	bgGroup.Children = []supervisor.SupervisionUnit{bgServer, cronGroup}
 
 	app.Children = []supervisor.SupervisionUnit{webGroup, bgGroup}
 

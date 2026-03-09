@@ -19,4 +19,7 @@ app:
         args:
           - "-e"
           - "development"
-          
+      - name: cron
+        children:
+        - name: cron
+          command: "cron"
