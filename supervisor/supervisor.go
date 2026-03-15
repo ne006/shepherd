@@ -11,3 +11,11 @@ func (s *Supervisor) LoadApp(app App) error {
 
 	return nil
 }
+
+func (s *Supervisor) Start() error {
+	return s.svtree.Start()
+}
+
+func (s *Supervisor) Stop() error {
+	return s.svtree.Stop()
+}
