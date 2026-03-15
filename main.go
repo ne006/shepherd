@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/ne006/shepherd/cli"
 	"github.com/ne006/shepherd/config_loader"
 	"github.com/ne006/shepherd/supervisor"
 )
@@ -81,6 +82,7 @@ func runSupervisor(ctx context.Context, cancel context.CancelFunc) {
 		}
 	}
 
+	var cl cli.CommandListener
 	var sv supervisor.Supervisor
 
 	if s, err := getSupervisor(ctx); err != nil {
@@ -89,6 +91,16 @@ func runSupervisor(ctx context.Context, cancel context.CancelFunc) {
 		return
 	} else {
 		sv = *s
+	}
+
+	cl.Supervisor = &sv
+
+	if err := cl.Init(); err != nil {
+		fmt.Printf("Error initializing command listender: %s\n", err)
+		cancel()
+		return
+	} else {
+		go cl.Listen()
 	}
 
 	if app, err := config_loader.LoadConfig(configPath); err != nil {
