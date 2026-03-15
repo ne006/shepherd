@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"os/exec"
+	"syscall"
 )
 
 type Process struct {
@@ -25,6 +26,13 @@ func (process Process) Start() error {
 }
 
 func (process Process) Stop() error {
-	// TODO: implement
+	pid := process.Process.Pid
+
+	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
+		return err
+	}
+
+	// Wait for the process to exit
+	process.Wait()
 	return nil
 }
