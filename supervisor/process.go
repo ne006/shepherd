@@ -1,6 +1,7 @@
 package supervisor
 
 import (
+	"fmt"
 	"os/exec"
 	"syscall"
 )
@@ -26,6 +27,10 @@ func (process Process) Start() error {
 }
 
 func (process Process) Stop() error {
+	if process.Process == nil {
+		return fmt.Errorf(("Associated process does not exist"))
+	}
+
 	pid := process.Process.Pid
 
 	if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
