@@ -7,17 +7,17 @@ type App struct {
 	Children []SupervisionUnit
 }
 
-func (app App) GetName() string {
+func (app *App) GetName() string {
 	return app.Name
 }
 
-func (app App) SetName(name string) error {
+func (app *App) SetName(name string) error {
 	app.Name = name
 
 	return nil
 }
 
-func (app App) Start() error {
+func (app *App) Start() error {
 	for _, su := range app.Children {
 		su.Start()
 	}
@@ -25,7 +25,7 @@ func (app App) Start() error {
 	return nil
 }
 
-func (app App) Stop() error {
+func (app *App) Stop() error {
 	for _, su := range app.Children {
 		su.Stop()
 	}

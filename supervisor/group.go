@@ -5,17 +5,17 @@ type Group struct {
 	Children []SupervisionUnit
 }
 
-func (group Group) GetName() string {
+func (group *Group) GetName() string {
 	return group.Name
 }
 
-func (group Group) SetName(name string) error {
+func (group *Group) SetName(name string) error {
 	group.Name = name
 
 	return nil
 }
 
-func (group Group) Start() error {
+func (group *Group) Start() error {
 	for _, su := range group.Children {
 		su.Start()
 	}
@@ -23,7 +23,7 @@ func (group Group) Start() error {
 	return nil
 }
 
-func (group Group) Stop() error {
+func (group *Group) Stop() error {
 	for _, su := range group.Children {
 		su.Stop()
 	}

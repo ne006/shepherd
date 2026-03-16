@@ -64,12 +64,12 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 		},
 	}
 
-	cronGroup.Children = []supervisor.SupervisionUnit{cron}
+	cronGroup.Children = []supervisor.SupervisionUnit{&cron}
 
-	webGroup.Children = []supervisor.SupervisionUnit{webServer}
-	bgGroup.Children = []supervisor.SupervisionUnit{bgServer, cronGroup}
+	webGroup.Children = []supervisor.SupervisionUnit{&webServer}
+	bgGroup.Children = []supervisor.SupervisionUnit{&bgServer, &cronGroup}
 
-	app.Children = []supervisor.SupervisionUnit{webGroup, bgGroup}
+	app.Children = []supervisor.SupervisionUnit{&webGroup, &bgGroup}
 
 	suite.ExampleApp = app
 }

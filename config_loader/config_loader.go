@@ -92,7 +92,7 @@ func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}) (
 		unit.Children = unitChildren
 	}
 
-	return unit, nil
+	return &unit, nil
 }
 
 func loadProcess(sourceMap map[string]interface{}, sourceCommand string) (supervisor.SupervisionUnit, error) {
@@ -117,7 +117,7 @@ func loadProcess(sourceMap map[string]interface{}, sourceCommand string) (superv
 		unit.Args = unitArgs
 	}
 
-	return unit, nil
+	return &unit, nil
 }
 
 func loadArgs(sourceArgs interface{}) ([]string, error) {
