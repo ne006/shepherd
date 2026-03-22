@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/ne006/shepherd/cli"
@@ -35,5 +36,6 @@ func usage() string {
 		- start
 		- stop
 		- list
+		- load <configPath>
 	`)
 }

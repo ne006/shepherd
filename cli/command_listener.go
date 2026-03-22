@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/ne006/shepherd/config_loader"
 	"github.com/ne006/shepherd/supervisor"
 )
 
@@ -104,6 +106,7 @@ var commands = map[string]func(*CommandListener, []string) (string, error){
 	"start": Start,
 	"stop":  Stop,
 	"list":  List,
+	"load":  Load,
 }
 
 func (cl *CommandListener) processCommand(input string) (string, error) {
@@ -144,4 +147,33 @@ func Stop(cl *CommandListener, _ []string) (string, error) {
 
 func List(cl *CommandListener, _ []string) (string, error) {
 	return fmt.Sprintf("%+v\n", cl.Supervisor), nil
+}
+
+func Load(cl *CommandListener, args []string) (string, error) {
+	if len(args) < 1 {
+		return "", fmt.Errorf("Should pass a path to supervision config")
+	}
+
+	configPath := args[0]
+
+	if configPath == "" {
+		return "", fmt.Errorf("Should pass a path to supervision config")
+	}
+
+	if _, err := os.Stat(configPath); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return "", fmt.Errorf("%s does not exist\n", configPath)
+		} else {
+			return "", fmt.Errorf("Error loading %s: %s\n", configPath, err)
+		}
+	}
+
+	if app, err := config_loader.LoadConfig(configPath); err != nil {
+		return "", fmt.Errorf("Error loading %s: %s\n", configPath, err)
+	} else {
+		cl.Supervisor.LoadApp(*app)
+		cl.Supervisor.Start()
+
+		return "ok\n", nil
+	}
 }
