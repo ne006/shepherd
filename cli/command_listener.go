@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/ne006/shepherd/supervisor"
@@ -98,23 +99,49 @@ func (cl *CommandListener) listenSocket() error {
 	}
 }
 
+// Command handling
+var commands = map[string]func(*CommandListener, []string) (string, error){
+	"start": Start,
+	"stop":  Stop,
+	"list":  List,
+}
+
 func (cl *CommandListener) processCommand(input string) (string, error) {
-	switch input {
-	case "start\n", "start":
-		if err := cl.Supervisor.Start(); err != nil {
-			return "", err
-		} else {
-			return "ok\n", nil
-		}
-	case "stop\n", "stop":
-		if err := cl.Supervisor.Stop(); err != nil {
-			return "", err
-		} else {
-			return "ok\n", nil
-		}
-	case "list\n", "list":
-		return fmt.Sprintf("%+v\n", cl.Supervisor), nil
-	default:
+	cmdName, args := parseCommand(input)
+
+	if cmd := commands[cmdName]; cmd == nil {
 		return "", fmt.Errorf("input not recognized")
+	} else {
+		return cmd(cl, args)
 	}
+}
+
+func parseCommand(input string) (string, []string) {
+	splitInput := strings.Split(strings.TrimRight(input, "\r\n"), " ")
+
+	cmdName := splitInput[0]
+	args := splitInput[1:]
+
+	return cmdName, args
+}
+
+// Commands
+func Start(cl *CommandListener, _ []string) (string, error) {
+	if err := cl.Supervisor.Start(); err != nil {
+		return "", err
+	} else {
+		return "ok\n", nil
+	}
+}
+
+func Stop(cl *CommandListener, _ []string) (string, error) {
+	if err := cl.Supervisor.Stop(); err != nil {
+		return "", err
+	} else {
+		return "ok\n", nil
+	}
+}
+
+func List(cl *CommandListener, _ []string) (string, error) {
+	return fmt.Sprintf("%+v\n", cl.Supervisor), nil
 }
