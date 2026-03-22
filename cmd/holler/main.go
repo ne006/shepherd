@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cmd := os.Args[1]
+	cmd := strings.Join(os.Args[1:], " ")
 
 	if cmd == "" {
 		fmt.Println(usage())
