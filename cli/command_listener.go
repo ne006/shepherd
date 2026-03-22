@@ -100,19 +100,19 @@ func (cl *CommandListener) listenSocket() error {
 
 func (cl *CommandListener) processCommand(input string) (string, error) {
 	switch input {
-	case "start\n":
+	case "start\n", "start":
 		if err := cl.Supervisor.Start(); err != nil {
 			return "", err
 		} else {
 			return "ok\n", nil
 		}
-	case "stop\n":
+	case "stop\n", "stop":
 		if err := cl.Supervisor.Stop(); err != nil {
 			return "", err
 		} else {
 			return "ok\n", nil
 		}
-	case "list\n":
+	case "list\n", "list":
 		return fmt.Sprintf("%+v\n", cl.Supervisor), nil
 	default:
 		return "", fmt.Errorf("input not recognized")
