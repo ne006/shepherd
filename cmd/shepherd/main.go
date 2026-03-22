@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/ne006/shepherd/cli"
-	"github.com/ne006/shepherd/config_loader"
 	"github.com/ne006/shepherd/supervisor"
 )
 
@@ -56,32 +54,6 @@ func getSupervisor(ctx context.Context) (*supervisor.Supervisor, error) {
 }
 
 func runSupervisor(ctx context.Context, cancel context.CancelFunc) {
-	if len(os.Args) < 2 {
-		fmt.Println("Provide a config path")
-		cancel()
-		return
-	}
-
-	configPath := os.Args[1]
-
-	if configPath == "" {
-		fmt.Println("Provide a config path")
-		cancel()
-		return
-	}
-
-	if _, err := os.Stat(configPath); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			fmt.Printf("%s does not exist\n", configPath)
-			cancel()
-			return
-		} else {
-			fmt.Printf("Error loading %s: %s\n", configPath, err)
-			cancel()
-			return
-		}
-	}
-
 	var cl cli.CommandListener
 	var sv supervisor.Supervisor
 
@@ -96,20 +68,11 @@ func runSupervisor(ctx context.Context, cancel context.CancelFunc) {
 	cl.Supervisor = &sv
 
 	if err := cl.Init(); err != nil {
-		fmt.Printf("Error initializing command listender: %s\n", err)
+		fmt.Printf("Error initializing command listener: %s\n", err)
 		cancel()
 		return
 	} else {
 		go cl.Listen()
-	}
-
-	if app, err := config_loader.LoadConfig(configPath); err != nil {
-		fmt.Printf("Error loading %s: %s\n", configPath, err)
-		cancel()
-		return
-	} else {
-		sv.LoadApp(*app)
-		sv.Start()
 	}
 }
 
