@@ -11,6 +11,7 @@ import (
 
 	"github.com/ne006/shepherd/config_loader"
 	"github.com/ne006/shepherd/supervisor"
+	"github.com/ne006/shepherd/utils"
 )
 
 type CommandListener struct {
@@ -160,12 +161,8 @@ func Load(cl *CommandListener, args []string) (string, error) {
 		return "", fmt.Errorf("Should pass a path to supervision config")
 	}
 
-	if _, err := os.Stat(configPath); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return "", fmt.Errorf("%s does not exist\n", configPath)
-		} else {
-			return "", fmt.Errorf("Error loading %s: %s\n", configPath, err)
-		}
+	if !utils.FileExists(configPath) {
+		return "", fmt.Errorf("%s does not exist\n", configPath)
 	}
 
 	if app, err := config_loader.LoadConfig(configPath); err != nil {
