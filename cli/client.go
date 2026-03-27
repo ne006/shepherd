@@ -1,7 +1,10 @@
 package cli
 
 import (
+	"fmt"
 	"net"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -42,7 +45,11 @@ func (cl *Client) SendCommand(input string) (string, error) {
 
 func (cl *Client) setDefaults() {
 	if cl.socketPath == "" {
-		cl.socketPath = "/tmp/shepherd.sock"
+		if homeDir, err := os.UserHomeDir(); err == nil {
+			cl.socketPath = filepath.Join(homeDir, ".shepherd", "shepherd.sock")
+		} else {
+			panic(fmt.Sprintf("Could not obtain user home directory %s", err))
+		}
 	}
 }
 

@@ -1,11 +1,11 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -41,11 +41,19 @@ func (cl *CommandListener) Listen() error {
 
 func (cl *CommandListener) setDefaults() {
 	if cl.socketPath == "" {
-		cl.socketPath = "/tmp/shepherd.sock"
+		if homeDir, err := os.UserHomeDir(); err == nil {
+			cl.socketPath = filepath.Join(homeDir, ".shepherd", "shepherd.sock")
+		} else {
+			panic(fmt.Sprintf("Could not obtain user home directory %s", err))
+		}
 	}
 }
 
 func (cl *CommandListener) initSocket() error {
+	if socketDir := filepath.Dir(cl.socketPath); !utils.FileExists(socketDir) {
+		os.MkdirAll(socketDir, 0766)
+	}
+
 	socket, err := net.Listen("unix", cl.socketPath)
 	if err != nil {
 		return err
