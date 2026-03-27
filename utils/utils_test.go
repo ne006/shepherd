@@ -24,10 +24,12 @@ func TestFileExists(t *testing.T) {
 		{"Existing file", filename, true},
 	}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
-			assert.Equal(t, testCase.result, FileExists(testCase.filePath))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.result, FileExists(tt.filePath))
 		})
 
 	}
+}
+
 }
