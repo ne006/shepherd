@@ -19,7 +19,15 @@ func main() {
 
 	client := cli.Client{}
 
-	client.Init()
+	if err := client.Init(); err != nil {
+		if client.SocketExists() {
+			fmt.Printf("An error occured: %s\n", err)
+			os.Exit(1)
+		} else {
+			fmt.Println("An error occurred: shepherd backend is not running")
+			os.Exit(1)
+		}
+	}
 
 	if resp, err := client.SendCommand(cmd); err != nil {
 		fmt.Printf("An error occured: %s\n", err)
