@@ -40,19 +40,16 @@ func (cl *CommandListener) Listen() error {
 }
 
 func (cl *CommandListener) setDefaults() {
+	wd := utils.NewWorkdir()
+
 	if cl.socketPath == "" {
-		if homeDir, err := os.UserHomeDir(); err == nil {
-			cl.socketPath = filepath.Join(homeDir, ".shepherd", "shepherd.sock")
-		} else {
-			panic(fmt.Sprintf("Could not obtain user home directory %s", err))
-		}
+		cl.socketPath = filepath.Join(wd.Path, "shepherd.sock")
 	}
 }
 
 func (cl *CommandListener) initSocket() error {
-	if socketDir := filepath.Dir(cl.socketPath); !utils.FileExists(socketDir) {
-		os.MkdirAll(socketDir, 0766)
-	}
+	wd := utils.NewWorkdir()
+	wd.Create()
 
 	socket, err := net.Listen("unix", cl.socketPath)
 	if err != nil {

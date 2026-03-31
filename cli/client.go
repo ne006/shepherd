@@ -1,11 +1,11 @@
 package cli
 
 import (
-	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ne006/shepherd/utils"
 )
 
 type Client struct {
@@ -44,12 +44,10 @@ func (cl *Client) SendCommand(input string) (string, error) {
 }
 
 func (cl *Client) setDefaults() {
+	wd := utils.NewWorkdir()
+
 	if cl.socketPath == "" {
-		if homeDir, err := os.UserHomeDir(); err == nil {
-			cl.socketPath = filepath.Join(homeDir, ".shepherd", "shepherd.sock")
-		} else {
-			panic(fmt.Sprintf("Could not obtain user home directory %s", err))
-		}
+		cl.socketPath = filepath.Join(wd.Path, "shepherd.sock")
 	}
 }
 
