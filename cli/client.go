@@ -23,6 +23,10 @@ func (cl *Client) Init() error {
 	return nil
 }
 
+func (cl *Client) SocketExists() bool {
+	return utils.FileExists(cl.socketPath)
+}
+
 func (cl *Client) SendCommand(input string) (string, error) {
 	if _, err := cl.socket.Write([]byte(input)); err != nil {
 		return "", err
