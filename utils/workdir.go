@@ -6,6 +6,10 @@ import (
 )
 
 func defaultWdPath() string {
+	if envDir := os.Getenv("SHEPHERD_WORKDIR"); envDir != "" {
+		return envDir
+	}
+
 	if homeDir, err := os.UserHomeDir(); err != nil {
 		return ".shepherd"
 	} else {
