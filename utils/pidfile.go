@@ -7,17 +7,17 @@ import (
 )
 
 type Pidfile struct {
-	path string
+	Path string
 }
 
 func (pf *Pidfile) Write(pid int) error {
-	pidFileDir := filepath.Dir(pf.path)
+	pidFileDir := filepath.Dir(pf.Path)
 
 	if err := os.MkdirAll(pidFileDir, 0766); err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(pf.path, []byte(strconv.Itoa(pid)), 0766); err != nil {
+	if err := os.WriteFile(pf.Path, []byte(strconv.Itoa(pid)), 0766); err != nil {
 		return err
 	}
 
@@ -25,5 +25,5 @@ func (pf *Pidfile) Write(pid int) error {
 }
 
 func (pf *Pidfile) Remove() error {
-	return os.Remove(pf.path)
+	return os.Remove(pf.Path)
 }

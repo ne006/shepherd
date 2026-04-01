@@ -20,7 +20,7 @@ func TestPidfile_Write(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pf := Pidfile{path: tt.path}
+			pf := Pidfile{Path: tt.path}
 
 			if tt.wantErr {
 				assert.NotEqual(t, nil, pf.Write(tt.pid))
@@ -54,7 +54,7 @@ func TestPidfile_Remove(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pf := Pidfile{path: tt.path}
+			pf := Pidfile{Path: tt.path}
 
 			err := pf.Remove()
 
