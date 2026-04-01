@@ -32,6 +32,9 @@ func (cl *CommandListener) Init() error {
 }
 
 func (cl *CommandListener) Listen() error {
+	createPidfile()
+	defer removePidfile()
+
 	if err := cl.listenSocket(); err != nil {
 		return err
 	}
@@ -177,5 +180,34 @@ func Load(cl *CommandListener, args []string) (string, error) {
 		cl.Supervisor.Start()
 
 		return "ok\n", nil
+	}
+}
+
+// Infra
+func getPidfile() (*utils.Pidfile, error) {
+	wd := utils.NewWorkdir()
+
+	if err := wd.Create(); err != nil {
+		return nil, err
+	}
+
+	pf := utils.Pidfile{Path: filepath.Join(wd.Path, "shepherd.pid")}
+
+	return &pf, nil
+}
+
+func createPidfile() error {
+	if pf, err := getPidfile(); err != nil {
+		return err
+	} else {
+		return pf.Write(os.Getpid())
+	}
+}
+
+func removePidfile() error {
+	if pf, err := getPidfile(); err != nil {
+		return err
+	} else {
+		return pf.Remove()
 	}
 }
