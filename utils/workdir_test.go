@@ -20,10 +20,10 @@ func TestWorkdir_Create(t *testing.T) {
 			var wd Workdir
 
 			if tt.path == "" {
-				wd = NewWorkdir()
-			} else {
-				wd = NewWorkdir()
-				wd.Path = tt.path
+			needsCleanup := true
+
+			if FileExists(wd.Path) {
+				needsCleanup = false
 			}
 
 			err := wd.Create()
@@ -33,6 +33,10 @@ func TestWorkdir_Create(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 				assert.Equal(t, true, FileExists(wd.Path))
+			}
+
+			if needsCleanup {
+				os.Remove(wd.Path)
 			}
 		})
 	}
