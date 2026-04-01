@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/ne006/shepherd/cli"
@@ -19,14 +21,9 @@ func main() {
 
 	client := cli.Client{}
 
-	if err := client.Init(); err != nil {
-		if client.SocketExists() {
-			fmt.Printf("An error occured: %s\n", err)
-			os.Exit(1)
-		} else {
-			fmt.Println("An error occurred: shepherd backend is not running")
-			os.Exit(1)
-		}
+	if err := initClient(&client); err != nil {
+		fmt.Printf("%s\n", err)
+		os.Exit(1)
 	}
 
 	if resp, err := client.SendCommand(cmd); err != nil {
@@ -46,4 +43,30 @@ func usage() string {
 		- list
 		- load <configPath>
 	`)
+}
+
+func initClient(client *cli.Client) error {
+	if err := client.Init(); err != nil {
+		if client.SocketExists() {
+			return fmt.Errorf("An error occured: %s\n", err)
+		} else {
+			if err := runBackend(); err != nil {
+				return fmt.Errorf("An error occured when starting shepherd: %s\n", err)
+			} else {
+				return initClient(client)
+			}
+		}
+	}
+
+	return nil
+}
+
+func runBackend() error {
+	cmd := exec.Command("shepherd")
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
+
+	return cmd.Start()
 }
