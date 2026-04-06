@@ -33,7 +33,6 @@ func (cl *CommandListener) Init() error {
 
 func (cl *CommandListener) Listen() error {
 	createPidfile()
-	defer removePidfile()
 
 	if err := cl.listenSocket(); err != nil {
 		return err
@@ -67,6 +66,7 @@ func (cl *CommandListener) initSocket() error {
 	go func() {
 		<-c
 		os.Remove(cl.socketPath)
+		removePidfile()
 	}()
 
 	return nil
