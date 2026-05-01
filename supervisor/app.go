@@ -1,5 +1,10 @@
 package supervisor
 
+import (
+	"fmt"
+	"strings"
+)
+
 type App struct {
 	Name   string
 	Config string
@@ -31,6 +36,22 @@ func (app *App) Stop() error {
 	}
 
 	return nil
+}
+
+func (app *App) GetUIString() string {
+	result := make([]string, 0)
+
+	result = append(result, app.Name)
+
+	for _, su := range app.Children {
+		uiString := su.GetUIString()
+
+		for _, s := range strings.Split(uiString, "\n") {
+			result = append(result, fmt.Sprintf("  %s", s))
+		}
+	}
+
+	return strings.Join(result, "\n")
 }
 
 func (app App) FindChild(name string) *SupervisionUnit {

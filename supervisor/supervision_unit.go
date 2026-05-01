@@ -6,4 +6,6 @@ type SupervisionUnit interface {
 
 	GetName() string
 	SetName(string) error
+
+	GetUIString() string
 }

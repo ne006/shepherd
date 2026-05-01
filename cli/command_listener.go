@@ -155,7 +155,7 @@ func Stop(cl *CommandListener, _ []string) (string, error) {
 }
 
 func List(cl *CommandListener, _ []string) (string, error) {
-	return fmt.Sprintf("%+v\n", cl.Supervisor), nil
+	return fmt.Sprintf("%s\n", cl.Supervisor.GetUIString()), nil
 }
 
 func Load(cl *CommandListener, args []string) (string, error) {

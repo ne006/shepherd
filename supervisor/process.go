@@ -48,6 +48,14 @@ func (process *Process) Stop() error {
 	return nil
 }
 
+func (process *Process) GetUIString() string {
+	if process.Process == nil {
+		return fmt.Sprintf("%s <not started>", process.Name)
+	} else {
+		return fmt.Sprintf("%s %v\n", process.Name, process.Process.Pid)
+	}
+}
+
 func (process *Process) supervise() error {
 	if process.Process == nil {
 		return fmt.Errorf(("Associated process does not exist"))

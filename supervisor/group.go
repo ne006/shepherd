@@ -1,5 +1,10 @@
 package supervisor
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Group struct {
 	Name     string
 	Children []SupervisionUnit
@@ -29,6 +34,22 @@ func (group *Group) Stop() error {
 	}
 
 	return nil
+}
+
+func (group *Group) GetUIString() string {
+	result := make([]string, 0)
+
+	result = append(result, group.Name)
+
+	for _, su := range group.Children {
+		uiString := su.GetUIString()
+
+		for _, s := range strings.Split(uiString, "\n") {
+			result = append(result, fmt.Sprintf("  %s", s))
+		}
+	}
+
+	return strings.Join(result, "\n")
 }
 
 func (group Group) FindChild(name string) *SupervisionUnit {

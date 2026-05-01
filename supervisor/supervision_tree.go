@@ -1,5 +1,9 @@
 package supervisor
 
+import (
+	"strings"
+)
+
 type SupervisionTree struct {
 	Children    []App
 	OldChildren []App
@@ -33,6 +37,16 @@ func (stree *SupervisionTree) StopOld() error {
 	stree.OldChildren = []App{}
 
 	return nil
+}
+
+func (stree *SupervisionTree) GetUIString() string {
+	result := make([]string, 0)
+
+	for _, su := range stree.Children {
+		result = append(result, su.GetUIString())
+	}
+
+	return strings.Join(result, "\n")
 }
 
 func (stree *SupervisionTree) Append(newApp App) error {

@@ -19,3 +19,7 @@ func (s *Supervisor) Start() error {
 func (s *Supervisor) Stop() error {
 	return s.svtree.Stop()
 }
+
+func (s *Supervisor) GetUIString() string {
+	return s.svtree.GetUIString()
+}
