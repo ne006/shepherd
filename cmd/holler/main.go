@@ -21,7 +21,7 @@ func main() {
 
 	client := cli.Client{}
 
-	if err := initClient(&client); err != nil {
+	if err := initClient(&client, true); err != nil {
 		fmt.Printf("%s\n", err)
 		os.Exit(1)
 	}
@@ -45,15 +45,19 @@ func usage() string {
 	`)
 }
 
-func initClient(client *cli.Client) error {
+func initClient(client *cli.Client, initBackend bool) error {
 	if err := client.Init(); err != nil {
 		if client.SocketExists() {
 			return fmt.Errorf("An error occured: %s\n", err)
 		} else {
-			if err := runBackend(); err != nil {
-				return fmt.Errorf("An error occured when starting shepherd: %s\n", err)
+			if initBackend {
+				if err := runBackend(); err != nil {
+					return fmt.Errorf("An error occured when starting shepherd: %s\n", err)
+				} else {
+					return initClient(client, false)
+				}
 			} else {
-				return initClient(client)
+				return initClient(client, false)
 			}
 		}
 	}
