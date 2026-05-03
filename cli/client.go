@@ -9,8 +9,9 @@ import (
 )
 
 type Client struct {
-	socketPath string
-	socket     net.Conn
+	socketPath    string
+	socket        net.Conn
+	socketTimeout time.Duration
 }
 
 func (cl *Client) Init() error {
@@ -53,10 +54,14 @@ func (cl *Client) setDefaults() {
 	if cl.socketPath == "" {
 		cl.socketPath = filepath.Join(wd.Path, "shepherd.sock")
 	}
+
+	if cl.socketTimeout == 0 {
+		cl.socketTimeout = 2 * time.Second
+	}
 }
 
 func (cl *Client) initSocket() error {
-	socket, err := net.Dial("unix", cl.socketPath)
+	socket, err := net.DialTimeout("unix", cl.socketPath, cl.socketTimeout)
 	if err != nil {
 		return err
 	}
