@@ -84,9 +84,13 @@ func (process *Process) SetName(name string) error {
 
 func (process *Process) Start() error {
 	startErr := process.Cmd.Start()
+	process.setState(StateStarting, StateReasonNone)
 
 	if startErr == nil {
+		process.setState(StateRunning, StateReasonNone)
 		go process.supervise()
+	} else {
+		process.setState(StateStopped, StateReasonError)
 	}
 
 	return startErr
@@ -94,6 +98,7 @@ func (process *Process) Start() error {
 
 func (process *Process) Stop() error {
 	if process.Process == nil {
+		process.setState(StateStopped, StateReasonExited)
 		return fmt.Errorf(("Associated process does not exist"))
 	}
 
@@ -103,16 +108,28 @@ func (process *Process) Stop() error {
 		return err
 	}
 
+	process.setState(StateStopping, StateReasonNone)
+
 	// Wait for the process to exit
 	process.Wait()
+
+	process.setState(StateStopped, StateReasonExited)
 	return nil
 }
 
 func (process *Process) GetUIString() string {
-	if process.Process == nil {
-		return fmt.Sprintf("%s <not started>", process.Name)
+	var processState string
+
+	if process.stateReason == StateReasonNone {
+		processState = fmt.Sprintf("%s", process.state)
 	} else {
-		return fmt.Sprintf("%s %v\n", process.Name, process.Process.Pid)
+		processState = fmt.Sprintf("%s (%s)", process.state, process.stateReason)
+	}
+
+	if process.Process == nil {
+		return fmt.Sprintf("%s %s", process.Name, processState)
+	} else {
+		return fmt.Sprintf("%s %s %v\n", process.Name, processState, process.Process.Pid)
 	}
 }
 
@@ -124,8 +141,10 @@ func (process *Process) supervise() error {
 	pid := process.Process.Pid
 
 	if state, err := process.Cmd.Process.Wait(); err != nil {
+		process.setState(StateStopped, StateReasonError)
 		fmt.Printf("%v wait error: %s\n", pid, err)
 	} else {
+		process.setState(StateStopped, StateReasonExited)
 		fmt.Printf("%v exited: %+v\n", pid, state)
 	}
 
