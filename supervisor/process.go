@@ -3,13 +3,73 @@ package supervisor
 import (
 	"fmt"
 	"os/exec"
+	"slices"
 	"syscall"
 )
 
+// ProcessState
+type ProcessState int
+
+const (
+	StateInitialized ProcessState = iota
+	StateStarting
+	StateRunning
+	StateStopping
+	StateStopped
+)
+
+var processStateName = map[ProcessState]string{
+	StateInitialized: "initialized",
+	StateStarting:    "starting",
+	StateRunning:     "running",
+	StateStopping:    "stopping",
+	StateStopped:     "stopped",
+}
+
+var processStateTransitions = map[ProcessState][]ProcessState{
+	StateInitialized: {StateStarting},
+	StateStarting:    {StateRunning, StateStopped},
+	StateRunning:     {StateStopping, StateStopped},
+	StateStopping:    {StateStopped},
+	StateStopped:     {StateStarting},
+}
+
+func (ps ProcessState) String() string {
+	return processStateName[ps]
+}
+
+func (from ProcessState) TransitionToIsValid(to ProcessState) bool {
+	return slices.Contains(processStateTransitions[from], to)
+}
+
+// ProcessStateReason
+type ProcessStateReason int
+
+const (
+	StateReasonNone ProcessStateReason = iota
+	StateReasonExited
+	StateReasonUser
+	StateReasonError
+)
+
+var processStateReasonName = map[ProcessStateReason]string{
+	StateReasonNone:   "",
+	StateReasonExited: "exited",
+	StateReasonUser:   "user",
+	StateReasonError:  "error",
+}
+
+func (psr ProcessStateReason) String() string {
+	return processStateReasonName[psr]
+}
+
+// Process
 type Process struct {
 	exec.Cmd
 
-	Name string
+	Name        string
+	state       ProcessState
+	stateReason ProcessStateReason
 }
 
 func (process *Process) GetName() string {
@@ -92,4 +152,19 @@ func (process *Process) recreate() error {
 	process.Cmd = newCmd
 
 	return nil
+}
+
+func (process *Process) getState() (ProcessState, ProcessStateReason) {
+	return process.state, process.stateReason
+}
+
+func (process *Process) setState(to ProcessState, reason ProcessStateReason) error {
+	if process.state.TransitionToIsValid(to) {
+		process.state = to
+		process.stateReason = reason
+
+		return nil
+	} else {
+		return fmt.Errorf("Can't transition from %s to %s", process.state, to)
+	}
 }
