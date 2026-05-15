@@ -83,6 +83,13 @@ func (process *Process) SetName(name string) error {
 }
 
 func (process *Process) Start() error {
+	if state, _ := process.getState(); state == StateStopped {
+		if err := process.recreate(); err != nil {
+			process.setState(StateStopped, StateReasonError)
+			return err
+		}
+	}
+
 	startErr := process.Cmd.Start()
 	process.setState(StateStarting, StateReasonNone)
 
@@ -157,11 +164,7 @@ func (process *Process) supervise() error {
 	}
 
 	if _, stateReason := process.getState(); stateReason != StateReasonUser {
-		if err := process.recreate(); err != nil {
-			return fmt.Errorf("Process recreation failed: %s", err)
-		}
-
-		err := process.Start()
+		err := process.restart()
 
 		fmt.Printf("%v restarted: %s\n", pid, err)
 
@@ -169,6 +172,14 @@ func (process *Process) supervise() error {
 	} else {
 		return nil
 	}
+}
+
+func (process *Process) restart() error {
+	if err := process.recreate(); err != nil {
+		return fmt.Errorf("Process recreation failed: %s", err)
+	}
+
+	return process.Start()
 }
 
 func (process *Process) recreate() error {
