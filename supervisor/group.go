@@ -28,9 +28,9 @@ func (group *Group) Start() error {
 	return nil
 }
 
-func (group *Group) Stop() error {
+func (group *Group) Stop(reason ProcessStateReason) error {
 	for _, su := range group.Children {
-		su.Stop()
+		su.Stop(reason)
 	}
 
 	return nil

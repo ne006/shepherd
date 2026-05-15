@@ -23,7 +23,7 @@ func (stree *SupervisionTree) Start() error {
 
 func (stree *SupervisionTree) Stop() error {
 	for _, app := range stree.Children {
-		app.Stop()
+		app.Stop(StateReasonUser)
 	}
 
 	return nil
@@ -31,7 +31,7 @@ func (stree *SupervisionTree) Stop() error {
 
 func (stree *SupervisionTree) StopOld() error {
 	for _, app := range stree.OldChildren {
-		app.Stop()
+		app.Stop(StateReasonUser)
 	}
 
 	stree.OldChildren = []App{}

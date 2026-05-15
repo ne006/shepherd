@@ -96,7 +96,7 @@ func (process *Process) Start() error {
 	return startErr
 }
 
-func (process *Process) Stop() error {
+func (process *Process) Stop(reason ProcessStateReason) error {
 	if process.Process == nil {
 		process.setState(StateStopped, StateReasonExited)
 		return fmt.Errorf(("Associated process does not exist"))
@@ -108,12 +108,12 @@ func (process *Process) Stop() error {
 		return err
 	}
 
-	process.setState(StateStopping, StateReasonNone)
+	process.setState(StateStopping, reason)
 
 	// Wait for the process to exit
 	process.Wait()
 
-	process.setState(StateStopped, StateReasonExited)
+	process.setState(StateStopped, reason)
 	return nil
 }
 

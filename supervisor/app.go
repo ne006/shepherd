@@ -30,9 +30,9 @@ func (app *App) Start() error {
 	return nil
 }
 
-func (app *App) Stop() error {
+func (app *App) Stop(reason ProcessStateReason) error {
 	for _, su := range app.Children {
-		su.Stop()
+		su.Stop(reason)
 	}
 
 	return nil
