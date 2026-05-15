@@ -154,15 +154,19 @@ func (process *Process) supervise() error {
 		fmt.Printf("%v exited with %v: %+v\n", pid, process.stateReason, state)
 	}
 
-	if err := process.recreate(); err != nil {
-		return fmt.Errorf("Process recreation failed: %s", err)
+	if _, stateReason := process.getState(); stateReason != StateReasonUser {
+		if err := process.recreate(); err != nil {
+			return fmt.Errorf("Process recreation failed: %s", err)
+		}
+
+		err := process.Start()
+
+		fmt.Printf("%v restarted: %s\n", pid, err)
+
+		return err
+	} else {
+		return nil
 	}
-
-	err := process.Start()
-
-	fmt.Printf("%v restarted: %s\n", pid, err)
-
-	return err
 }
 
 func (process *Process) recreate() error {
