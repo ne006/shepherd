@@ -144,8 +144,14 @@ func (process *Process) supervise() error {
 		process.setState(StateStopped, StateReasonError)
 		fmt.Printf("%v wait error: %s\n", pid, err)
 	} else {
-		process.setState(StateStopped, StateReasonExited)
-		fmt.Printf("%v exited: %+v\n", pid, state)
+		if _, stateReason := process.getState(); stateReason == StateReasonNone {
+			if state.Success() {
+				process.setState(StateStopped, StateReasonExited)
+			} else {
+				process.setState(StateStopped, StateReasonError)
+			}
+		}
+		fmt.Printf("%v exited with %v: %+v\n", pid, process.stateReason, state)
 	}
 
 	if err := process.recreate(); err != nil {
