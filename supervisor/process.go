@@ -141,8 +141,10 @@ func (process *Process) supervise() error {
 	pid := process.Process.Pid
 
 	if state, err := process.Cmd.Process.Wait(); err != nil {
-		process.setState(StateStopped, StateReasonError)
-		fmt.Printf("%v wait error: %s\n", pid, err)
+		if pstate, _ := process.getState(); pstate != StateStopped && pstate != StateStopping {
+			process.setState(StateStopped, StateReasonError)
+			fmt.Printf("%v wait error: %s\n", pid, err)
+		}
 	} else {
 		if _, stateReason := process.getState(); stateReason == StateReasonNone {
 			if state.Success() {
