@@ -1,6 +1,7 @@
 package supervisor
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -9,8 +10,16 @@ type SupervisionTree struct {
 	OldChildren []SupervisionUnit
 }
 
+func (_ *SupervisionTree) GetName() string {
+	return ""
+}
+
+func (_ *SupervisionTree) SetName(value string) error {
+	return nil
+}
+
 func (stree *SupervisionTree) Start() error {
-	if err := stree.StopOld(); err != nil {
+	if err := stree.StopOld(StateReasonUser); err != nil {
 		return err
 	}
 
@@ -21,17 +30,17 @@ func (stree *SupervisionTree) Start() error {
 	return nil
 }
 
-func (stree *SupervisionTree) Stop() error {
+func (stree *SupervisionTree) Stop(reason ProcessStateReason) error {
 	for _, app := range stree.Children {
-		app.Stop(StateReasonUser)
+		app.Stop(reason)
 	}
 
 	return nil
 }
 
-func (stree *SupervisionTree) StopOld() error {
+func (stree *SupervisionTree) StopOld(reason ProcessStateReason) error {
 	for _, app := range stree.OldChildren {
-		app.Stop(StateReasonUser)
+		app.Stop(reason)
 	}
 
 	stree.OldChildren = []SupervisionUnit{}
