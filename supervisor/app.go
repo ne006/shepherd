@@ -54,18 +54,18 @@ func (app *App) GetUIString() string {
 	return strings.Join(result, "\n")
 }
 
-func (app App) FindChild(name string) *SupervisionUnit {
+func (app App) FindChild(name string) SupervisionUnit {
 	for _, su := range app.Children {
 		if su.GetName() == name {
-			return &su
+			return su
 		}
 	}
 
 	return nil
 }
 
-func (app App) AppendChild(child *SupervisionUnit) error {
-	app.Children = append(app.Children, *child)
+func (app App) AppendChild(child SupervisionUnit) error {
+	app.Children = append(app.Children, child)
 
 	return nil
 }

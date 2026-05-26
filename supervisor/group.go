@@ -52,18 +52,18 @@ func (group *Group) GetUIString() string {
 	return strings.Join(result, "\n")
 }
 
-func (group Group) FindChild(name string) *SupervisionUnit {
+func (group Group) FindChild(name string) SupervisionUnit {
 	for _, su := range group.Children {
 		if su.GetName() == name {
-			return &su
+			return su
 		}
 	}
 
 	return nil
 }
 
-func (group Group) AppendChild(child *SupervisionUnit) error {
-	group.Children = append(group.Children, *child)
+func (group Group) AppendChild(child SupervisionUnit) error {
+	group.Children = append(group.Children, child)
 
 	return nil
 }
