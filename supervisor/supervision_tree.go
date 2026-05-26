@@ -5,8 +5,8 @@ import (
 )
 
 type SupervisionTree struct {
-	Children    []App
-	OldChildren []App
+	Children    []SupervisionUnit
+	OldChildren []SupervisionUnit
 }
 
 func (stree *SupervisionTree) Start() error {
@@ -34,7 +34,7 @@ func (stree *SupervisionTree) StopOld() error {
 		app.Stop(StateReasonUser)
 	}
 
-	stree.OldChildren = []App{}
+	stree.OldChildren = []SupervisionUnit{}
 
 	return nil
 }
@@ -49,12 +49,16 @@ func (stree *SupervisionTree) GetUIString() string {
 	return strings.Join(result, "\n")
 }
 
-func (stree *SupervisionTree) Append(newApp App) error {
+func (stree *SupervisionTree) AppendChild(su SupervisionUnit) error {
+	if _, isApp := su.(*App); !isApp {
+		return fmt.Errorf("only an App can be a direct child of SupervisionTree")
+	}
+
 	var oldIdx int
-	var oldApp *App
+	var oldApp *SupervisionUnit
 
 	for i, app := range stree.Children {
-		if app.GetName() == newApp.GetName() {
+		if app.GetName() == su.GetName() {
 			oldIdx, oldApp = i, &app
 		}
 	}
@@ -65,21 +69,21 @@ func (stree *SupervisionTree) Append(newApp App) error {
 		stree.Children = append(
 			stree.Children[:oldIdx],
 			append(
-				[]App{newApp},
+				[]SupervisionUnit{su},
 				stree.Children[oldIdx+1:]...,
 			)...,
 		)
 	} else {
-		stree.Children = append(stree.Children, newApp)
+		stree.Children = append(stree.Children, su)
 	}
 
 	return nil
 }
 
-func (stree *SupervisionTree) FindChild(name string) *App {
+func (stree *SupervisionTree) FindChild(name string) SupervisionUnit {
 	for _, app := range stree.Children {
-		if app.Name == name {
-			return &app
+		if app.GetName() == name {
+			return app
 		}
 	}
 

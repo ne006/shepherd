@@ -5,7 +5,7 @@ type Supervisor struct {
 }
 
 func (s *Supervisor) LoadApp(app App) error {
-	if err := s.svtree.Append(app); err != nil {
+	if err := s.svtree.AppendChild(&app); err != nil {
 		return err
 	}
 
