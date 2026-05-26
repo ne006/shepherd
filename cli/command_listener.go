@@ -138,16 +138,28 @@ func parseCommand(input string) (string, []string) {
 }
 
 // Commands
-func Start(cl *CommandListener, _ []string) (string, error) {
-	if err := cl.Supervisor.Start(); err != nil {
+func Start(cl *CommandListener, args []string) (string, error) {
+	var path string
+
+	if len(args) > 0 {
+		path = args[0]
+	}
+
+	if err := cl.Supervisor.Start(path); err != nil {
 		return "", err
 	} else {
 		return "ok\n", nil
 	}
 }
 
-func Stop(cl *CommandListener, _ []string) (string, error) {
-	if err := cl.Supervisor.Stop(); err != nil {
+func Stop(cl *CommandListener, args []string) (string, error) {
+	var path string
+
+	if len(args) > 0 {
+		path = args[0]
+	}
+
+	if err := cl.Supervisor.Stop(path); err != nil {
 		return "", err
 	} else {
 		return "ok\n", nil
@@ -177,7 +189,7 @@ func Load(cl *CommandListener, args []string) (string, error) {
 		return "", fmt.Errorf("Error loading %s: %s\n", configPath, err)
 	} else {
 		cl.Supervisor.LoadApp(*app)
-		cl.Supervisor.Start()
+		cl.Supervisor.Start(app.GetName())
 
 		return "ok\n", nil
 	}

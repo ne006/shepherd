@@ -52,6 +52,6 @@ func runSupervisor(ctx context.Context) {
 
 		<-ctx.Done()
 
-		sv.Stop()
+		sv.Stop("")
 	}
 }
