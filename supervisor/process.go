@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"slices"
 	"syscall"
+
+	"go.uber.org/zap"
 )
 
 // ProcessState
@@ -70,6 +72,8 @@ type Process struct {
 	Name        string
 	state       ProcessState
 	stateReason ProcessStateReason
+
+	Logger *zap.SugaredLogger
 }
 
 func (process *Process) GetName() string {
