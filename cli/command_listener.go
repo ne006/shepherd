@@ -12,6 +12,8 @@ import (
 	"github.com/ne006/shepherd/config_loader"
 	"github.com/ne006/shepherd/supervisor"
 	"github.com/ne006/shepherd/utils"
+
+	"go.uber.org/zap"
 )
 
 type CommandListener struct {
@@ -19,9 +21,14 @@ type CommandListener struct {
 	socket     net.Listener
 
 	Supervisor *supervisor.Supervisor
+
+	logger *zap.SugaredLogger
 }
 
-func (cl *CommandListener) Init() error {
+func (cl *CommandListener) Init(s *supervisor.Supervisor, l *zap.SugaredLogger) error {
+	cl.Supervisor = s
+	cl.logger = l
+
 	cl.setDefaults()
 
 	if err := cl.initSocket(); err != nil {

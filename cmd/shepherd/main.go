@@ -9,6 +9,8 @@ import (
 
 	"github.com/ne006/shepherd/cli"
 	"github.com/ne006/shepherd/supervisor"
+	"github.com/ne006/shepherd/utils"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -42,16 +44,28 @@ func runSupervisor(ctx context.Context) {
 	var cl cli.CommandListener
 	var sv supervisor.Supervisor
 
-	cl.Supervisor = &sv
-
-	if err := cl.Init(); err != nil {
-		fmt.Printf("Error initializing command listener: %s\n", err)
+	if logger, err := initLogger(ctx); err != nil {
 		return
 	} else {
-		go cl.Listen()
+		if err := cl.Init(&sv, logger); err != nil {
+			fmt.Printf("Error initializing command listener: %s\n", err)
+			return
+		} else {
+			go cl.Listen()
 
-		<-ctx.Done()
+			<-ctx.Done()
 
-		sv.Stop("")
+			sv.Stop("")
+		}
+	}
+}
+
+func initLogger(ctx context.Context) (*zap.SugaredLogger, error) {
+	loggerType := os.Getenv("LOGGER")
+
+	if l, err := utils.NewLogger(ctx, loggerType); err != nil {
+		return nil, fmt.Errorf("Error initializing logger: %s\n", err)
+	} else {
+		return l.Sugar(), nil
 	}
 }
