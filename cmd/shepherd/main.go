@@ -34,10 +34,8 @@ func trapSignals(origCtx context.Context, runFn func(context.Context)) error {
 
 	<-ctx.Done()
 
-	fmt.Println(ctx.Err())
 	stop()
-
-	return nil
+	return ctx.Err()
 }
 
 func runSupervisor(ctx context.Context) {
