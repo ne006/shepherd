@@ -154,7 +154,7 @@ func (process *Process) supervise() error {
 	if state, err := process.Cmd.Process.Wait(); err != nil {
 		if pstate, _ := process.getState(); pstate != StateStopped && pstate != StateStopping {
 			process.setState(StateStopped, StateReasonError)
-			fmt.Printf("%v wait error: %s\n", pid, err)
+			process.Logger.Errorf("%v wait error: %s", pid, err)
 		}
 	} else {
 		if _, stateReason := process.getState(); stateReason == StateReasonNone {
@@ -164,13 +164,13 @@ func (process *Process) supervise() error {
 				process.setState(StateStopped, StateReasonError)
 			}
 		}
-		fmt.Printf("%v exited with %v: %+v\n", pid, process.stateReason, state)
+		process.Logger.Infof("%v exited with %v: %+v", pid, process.stateReason, state)
 	}
 
 	if _, stateReason := process.getState(); stateReason != StateReasonUser {
 		err := process.restart()
 
-		fmt.Printf("%v restarted: %s\n", pid, err)
+		process.Logger.Infof("%v restarted: %s", pid, err)
 
 		return err
 	} else {
@@ -180,6 +180,7 @@ func (process *Process) supervise() error {
 
 func (process *Process) restart() error {
 	if err := process.recreate(); err != nil {
+		process.Logger.Infof("Process recreation failed: %s", err)
 		return fmt.Errorf("Process recreation failed: %s", err)
 	}
 
@@ -206,6 +207,7 @@ func (process *Process) getState() (ProcessState, ProcessStateReason) {
 
 func (process *Process) setState(to ProcessState, reason ProcessStateReason) error {
 	if process.state.TransitionToIsValid(to) {
+		process.Logger.Infof("%s: %s (%s) -> %s (%s)", process.Name, process.state, process.stateReason, to, reason)
 		process.state = to
 		process.stateReason = reason
 
