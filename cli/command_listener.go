@@ -192,7 +192,7 @@ func Load(cl *CommandListener, args []string) (string, error) {
 		return "", fmt.Errorf("%s does not exist\n", configPath)
 	}
 
-	if app, err := config_loader.LoadConfig(configPath); err != nil {
+	if app, err := config_loader.LoadConfig(configPath, cl.logger); err != nil {
 		return "", fmt.Errorf("Error loading %s: %s\n", configPath, err)
 	} else {
 		cl.Supervisor.LoadApp(*app)

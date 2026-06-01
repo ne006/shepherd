@@ -5,6 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/ne006/shepherd/supervisor"
+	"go.uber.org/zap"
 
 	"gopkg.in/yaml.v3"
 
@@ -18,7 +19,7 @@ type config struct {
 	}
 }
 
-func LoadConfig(path string) (*supervisor.App, error) {
+func LoadConfig(path string, logger *zap.SugaredLogger) (*supervisor.App, error) {
 	data, err := os.ReadFile(path)
 
 	if err != nil {
@@ -37,7 +38,7 @@ func LoadConfig(path string) (*supervisor.App, error) {
 	app.Name = cfg.App.Name
 	app.Config = path
 
-	if appChildren, err := loadChildren(cfg.App.Children); err != nil {
+	if appChildren, err := loadChildren(cfg.App.Children, logger); err != nil {
 		return nil, err
 	} else {
 		app.Children = appChildren
@@ -46,11 +47,11 @@ func LoadConfig(path string) (*supervisor.App, error) {
 	return &app, nil
 }
 
-func loadChildren(sourceList []interface{}) ([]supervisor.SupervisionUnit, error) {
+func loadChildren(sourceList []interface{}, logger *zap.SugaredLogger) ([]supervisor.SupervisionUnit, error) {
 	var children []supervisor.SupervisionUnit
 
 	for _, source := range sourceList {
-		if child, err := loadChild(source); err != nil {
+		if child, err := loadChild(source, logger); err != nil {
 			return children, err
 		} else if child != supervisor.SupervisionUnit(nil) {
 			children = append(children, child)
@@ -60,12 +61,12 @@ func loadChildren(sourceList []interface{}) ([]supervisor.SupervisionUnit, error
 	return children, nil
 }
 
-func loadChild(source interface{}) (supervisor.SupervisionUnit, error) {
+func loadChild(source interface{}, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
 	if sourceMap, ok := source.(map[string]interface{}); ok {
 		if sourceChildren, ok := sourceMap["children"].([]interface{}); ok {
-			return loadGroup(sourceMap, sourceChildren)
+			return loadGroup(sourceMap, sourceChildren, logger)
 		} else if sourceCommand, ok := sourceMap["command"].(string); ok {
-			return loadProcess(sourceMap, sourceCommand)
+			return loadProcess(sourceMap, sourceCommand, logger)
 		} else {
 			return nil, fmt.Errorf("could not deduce type of %v", sourceMap)
 		}
@@ -74,7 +75,7 @@ func loadChild(source interface{}) (supervisor.SupervisionUnit, error) {
 	}
 }
 
-func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}) (supervisor.SupervisionUnit, error) {
+func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
 	var name string
 	var ok bool
 
@@ -86,7 +87,7 @@ func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}) (
 		Name: name,
 	}
 
-	if unitChildren, err := loadChildren(sourceChildren); err != nil {
+	if unitChildren, err := loadChildren(sourceChildren, logger); err != nil {
 		return nil, err
 	} else {
 		unit.Children = unitChildren
@@ -95,7 +96,7 @@ func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}) (
 	return &unit, nil
 }
 
-func loadProcess(sourceMap map[string]interface{}, sourceCommand string) (supervisor.SupervisionUnit, error) {
+func loadProcess(sourceMap map[string]interface{}, sourceCommand string, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
 	var name string
 	var ok bool
 
@@ -109,6 +110,8 @@ func loadProcess(sourceMap map[string]interface{}, sourceCommand string) (superv
 		Cmd: exec.Cmd{
 			Path: sourceCommand,
 		},
+
+		Logger: logger,
 	}
 
 	if unitArgs, err := loadArgs(sourceMap["args"]); err != nil {

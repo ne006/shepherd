@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/zap"
 
 	"github.com/ne006/shepherd/supervisor"
 )
@@ -14,9 +15,16 @@ type ConfigLoaderTestSuite struct {
 	suite.Suite
 	ConfigPath string
 	ExampleApp supervisor.App
+	Logger     *zap.SugaredLogger
 }
 
 func (suite *ConfigLoaderTestSuite) SetupTest() {
+	if logger, err := zap.NewProduction(); err != nil {
+		suite.T().Errorf("%v\n", err)
+	} else {
+		suite.Logger = logger.Sugar()
+	}
+
 	suite.ConfigPath = ("./example_config.yml")
 
 	app := supervisor.App{
@@ -45,6 +53,8 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 			Path: "web_srv",
 			Args: []string{"-p", "8080", "-b", "0.0.0.0", "-e", "development"},
 		},
+
+		Logger: suite.Logger,
 	}
 
 	bgServer := supervisor.Process{
@@ -53,6 +63,8 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 			Path: "bg_srv",
 			Args: []string{"-e", "development"},
 		},
+
+		Logger: suite.Logger,
 	}
 
 	cron := supervisor.Process{
@@ -62,6 +74,8 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 			Path: "cron",
 			Args: []string{},
 		},
+
+		Logger: suite.Logger,
 	}
 
 	cronGroup.Children = []supervisor.SupervisionUnit{&cron}
@@ -77,7 +91,7 @@ func (suite *ConfigLoaderTestSuite) SetupTest() {
 // All methods that begin with "Test" are run as tests within a
 // suite.
 func (suite *ConfigLoaderTestSuite) TestLoadConfig() {
-	if app, err := LoadConfig("./example_config.yml"); err != nil {
+	if app, err := LoadConfig("./example_config.yml", suite.Logger); err != nil {
 		suite.T().Errorf("%v\n", err)
 	} else {
 		assert.Equal(suite.T(), &suite.ExampleApp, app)
