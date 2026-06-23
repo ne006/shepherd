@@ -38,9 +38,9 @@ func usage() string {
 	shepherd - a process supervisor
 
 	Usage:
-		- start
-		- restart
-		- stop
+		- start <path>
+		- restart <path>
+		- stop <path>
 		- list
 		- load <configPath>
 	`)
