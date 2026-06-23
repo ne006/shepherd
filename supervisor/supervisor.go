@@ -32,6 +32,14 @@ func (s *Supervisor) Stop(spath string) error {
 	}
 }
 
+func (s *Supervisor) Restart(spath string) error {
+	if child := s.findChild(spath); child != nil {
+		return (*child).Restart(StateReasonUser)
+	} else {
+		return fmt.Errorf("%s is not defined", spath)
+	}
+}
+
 func (s *Supervisor) GetUIString() string {
 	return s.svtree.GetUIString()
 }
