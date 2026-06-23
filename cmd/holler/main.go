@@ -39,6 +39,7 @@ func usage() string {
 
 	Usage:
 		- start
+		- restart
 		- stop
 		- list
 		- load <configPath>

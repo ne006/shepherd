@@ -119,10 +119,11 @@ func (cl *CommandListener) listenSocket() error {
 
 // Command handling
 var commands = map[string]func(*CommandListener, []string) (string, error){
-	"start": Start,
-	"stop":  Stop,
-	"list":  List,
-	"load":  Load,
+	"start":   Start,
+	"stop":    Stop,
+	"restart": Restart,
+	"list":    List,
+	"load":    Load,
 }
 
 func (cl *CommandListener) processCommand(input string) (string, error) {
@@ -171,6 +172,21 @@ func Stop(cl *CommandListener, args []string) (string, error) {
 	} else {
 		return "ok\n", nil
 	}
+}
+
+func Restart(cl *CommandListener, args []string) (string, error) {
+	var path string
+
+	if len(args) > 0 {
+		path = args[0]
+	}
+
+	if err := cl.Supervisor.Restart(path); err != nil {
+		return "", err
+	} else {
+		return "ok\n", nil
+	}
+
 }
 
 func List(cl *CommandListener, _ []string) (string, error) {
