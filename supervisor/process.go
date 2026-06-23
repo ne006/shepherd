@@ -128,6 +128,16 @@ func (process *Process) Stop(reason ProcessStateReason) error {
 	return nil
 }
 
+func (process *Process) Restart(reason ProcessStateReason) error {
+	if err := process.Stop(reason); err != nil {
+		return err
+	} else if err := process.Start(); err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
+
 func (process *Process) GetUIString() string {
 	var processState string
 

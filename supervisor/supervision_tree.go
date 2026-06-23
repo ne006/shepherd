@@ -48,6 +48,14 @@ func (stree *SupervisionTree) StopOld(reason ProcessStateReason) error {
 	return nil
 }
 
+func (stree *SupervisionTree) Restart(reason ProcessStateReason) error {
+	for _, app := range stree.Children {
+		app.Restart(reason)
+	}
+
+	return nil
+}
+
 func (stree *SupervisionTree) GetUIString() string {
 	result := make([]string, 0)
 

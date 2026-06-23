@@ -36,6 +36,14 @@ func (group *Group) Stop(reason ProcessStateReason) error {
 	return nil
 }
 
+func (group *Group) Restart(reason ProcessStateReason) error {
+	for _, su := range group.Children {
+		su.Restart(reason)
+	}
+
+	return nil
+}
+
 func (group *Group) GetUIString() string {
 	result := make([]string, 0)
 

@@ -38,6 +38,14 @@ func (app *App) Stop(reason ProcessStateReason) error {
 	return nil
 }
 
+func (app *App) Restart(reason ProcessStateReason) error {
+	for _, su := range app.Children {
+		su.Restart(reason)
+	}
+
+	return nil
+}
+
 func (app *App) GetUIString() string {
 	result := make([]string, 0)
 
