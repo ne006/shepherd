@@ -2,6 +2,7 @@ package config_loader
 
 import (
 	"fmt"
+	"maps"
 	"os/exec"
 
 	"github.com/ne006/shepherd/supervisor"
@@ -14,8 +15,9 @@ import (
 
 type config struct {
 	App struct {
-		Name     string        `yaml:"name"`
-		Children []interface{} `yaml:"children"`
+		Name     string         `yaml:"name"`
+		Children []interface{}  `yaml:"children"`
+		Env      map[string]any `yaml:"env"`
 	}
 }
 
@@ -38,7 +40,9 @@ func LoadConfig(path string, logger *zap.SugaredLogger) (*supervisor.App, error)
 	app.Name = cfg.App.Name
 	app.Config = path
 
-	if appChildren, err := loadChildren(cfg.App.Children, logger); err != nil {
+	app.SetEnv(cfg.App.Env)
+
+	if appChildren, err := loadChildren(cfg.App.Children, &app, logger); err != nil {
 		return nil, err
 	} else {
 		app.Children = appChildren
@@ -47,11 +51,11 @@ func LoadConfig(path string, logger *zap.SugaredLogger) (*supervisor.App, error)
 	return &app, nil
 }
 
-func loadChildren(sourceList []interface{}, logger *zap.SugaredLogger) ([]supervisor.SupervisionUnit, error) {
+func loadChildren(sourceList []interface{}, parentUnit supervisor.Composite, logger *zap.SugaredLogger) ([]supervisor.SupervisionUnit, error) {
 	var children []supervisor.SupervisionUnit
 
 	for _, source := range sourceList {
-		if child, err := loadChild(source, logger); err != nil {
+		if child, err := loadChild(source, parentUnit, logger); err != nil {
 			return children, err
 		} else if child != supervisor.SupervisionUnit(nil) {
 			children = append(children, child)
@@ -61,12 +65,12 @@ func loadChildren(sourceList []interface{}, logger *zap.SugaredLogger) ([]superv
 	return children, nil
 }
 
-func loadChild(source interface{}, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
+func loadChild(source interface{}, parentUnit supervisor.Composite, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
 	if sourceMap, ok := source.(map[string]interface{}); ok {
 		if sourceChildren, ok := sourceMap["children"].([]interface{}); ok {
-			return loadGroup(sourceMap, sourceChildren, logger)
+			return loadGroup(sourceMap, sourceChildren, parentUnit, logger)
 		} else if sourceCommand, ok := sourceMap["command"].(string); ok {
-			return loadProcess(sourceMap, sourceCommand, logger)
+			return loadProcess(sourceMap, sourceCommand, parentUnit, logger)
 		} else {
 			return nil, fmt.Errorf("could not deduce type of %v", sourceMap)
 		}
@@ -75,7 +79,7 @@ func loadChild(source interface{}, logger *zap.SugaredLogger) (supervisor.Superv
 	}
 }
 
-func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
+func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}, parentUnit supervisor.Composite, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
 	var name string
 	var ok bool
 
@@ -87,7 +91,9 @@ func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}, l
 		Name: name,
 	}
 
-	if unitChildren, err := loadChildren(sourceChildren, logger); err != nil {
+	loadEnv(&unit, sourceMap, parentUnit)
+
+	if unitChildren, err := loadChildren(sourceChildren, &unit, logger); err != nil {
 		return nil, err
 	} else {
 		unit.Children = unitChildren
@@ -96,7 +102,7 @@ func loadGroup(sourceMap map[string]interface{}, sourceChildren []interface{}, l
 	return &unit, nil
 }
 
-func loadProcess(sourceMap map[string]interface{}, sourceCommand string, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
+func loadProcess(sourceMap map[string]interface{}, sourceCommand string, parentUnit supervisor.Composite, logger *zap.SugaredLogger) (supervisor.SupervisionUnit, error) {
 	var name string
 	var ok bool
 
@@ -120,6 +126,8 @@ func loadProcess(sourceMap map[string]interface{}, sourceCommand string, logger 
 		unit.Args = unitArgs
 	}
 
+	loadEnv(&unit, sourceMap, parentUnit)
+
 	return &unit, nil
 }
 
@@ -142,5 +150,21 @@ func loadArgs(sourceArgs interface{}) ([]string, error) {
 		return unitArgs, nil
 	} else {
 		return nil, fmt.Errorf("%v should be a list, got %T", sourceArgs, sourceArgs)
+	}
+}
+
+func loadEnv(unit supervisor.SupervisionUnit, sourceMap map[string]interface{}, parentUnit supervisor.Composite) {
+	if eo, ok := unit.(supervisor.EnvironmentOwner); ok {
+		currentEnv := make(map[string]any)
+
+		if peo, ok := parentUnit.(supervisor.EnvironmentOwner); ok {
+			maps.Copy(currentEnv, peo.GetEnv())
+		}
+
+		if unitEnv, ok := sourceMap["env"].(map[string]any); ok {
+			maps.Copy(currentEnv, unitEnv)
+		}
+
+		eo.SetEnv(currentEnv)
 	}
 }

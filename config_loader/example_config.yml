@@ -1,5 +1,7 @@
 app:
   name: test_app
+  env:
+    APP: test_app
   children:
     - name: web
       children:
@@ -13,12 +15,17 @@ app:
             - "-e"
             - "development"
     - name: bg_jobs
+      env:
+        LOG_DIR: "/home/user/log/test_app/bg_jobs"
       children:
       - name: bg_server
         command: "bg_srv"
         args:
           - "-e"
           - "development"
+        env:
+          API_KEY: "{{env \"API_KEY\"}}"
+          WORKERS: 5
       - name: cron
         children:
         - name: cron
