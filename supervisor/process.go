@@ -74,6 +74,8 @@ type Process struct {
 	stateReason ProcessStateReason
 
 	Logger *zap.SugaredLogger
+
+	envHash map[string]any
 }
 
 func (process *Process) GetName() string {
@@ -86,6 +88,14 @@ func (process *Process) SetName(name string) error {
 	return nil
 }
 
+func (process *Process) GetEnv() map[string]any {
+	return process.envHash
+}
+
+func (process *Process) SetEnv(envHash map[string]any) {
+	process.envHash = envHash
+}
+
 func (process *Process) Start() error {
 	if state, _ := process.getState(); state == StateStopped {
 		if err := process.recreate(); err != nil {
@@ -93,6 +103,8 @@ func (process *Process) Start() error {
 			return err
 		}
 	}
+
+	process.Env = loadEnv(process)
 
 	startErr := process.Cmd.Start()
 	process.setState(StateStarting, StateReasonNone)

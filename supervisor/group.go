@@ -8,6 +8,8 @@ import (
 type Group struct {
 	Name     string
 	Children []SupervisionUnit
+
+	envHash map[string]any
 }
 
 func (group *Group) GetName() string {
@@ -18,6 +20,14 @@ func (group *Group) SetName(name string) error {
 	group.Name = name
 
 	return nil
+}
+
+func (group *Group) GetEnv() map[string]any {
+	return group.envHash
+}
+
+func (group *Group) SetEnv(envHash map[string]any) {
+	group.envHash = envHash
 }
 
 func (group *Group) Start() error {

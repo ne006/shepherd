@@ -10,6 +10,8 @@ type App struct {
 	Config string
 
 	Children []SupervisionUnit
+
+	envHash map[string]any
 }
 
 func (app *App) GetName() string {
@@ -20,6 +22,14 @@ func (app *App) SetName(name string) error {
 	app.Name = name
 
 	return nil
+}
+
+func (app *App) GetEnv() map[string]any {
+	return app.envHash
+}
+
+func (app *App) SetEnv(envHash map[string]any) {
+	app.envHash = envHash
 }
 
 func (app *App) Start() error {
