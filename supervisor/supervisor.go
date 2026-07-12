@@ -60,7 +60,7 @@ func (s *Supervisor) findChild(spath string) *SupervisionUnit {
 			break
 		}
 
-		if i == len(path)-1 {
+		if i == len(path) {
 			break // Node matching last path part is the searched one
 		} else {
 			if currentComposite, isComposite := current.(Composite); isComposite {
