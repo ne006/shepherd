@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"slices"
 	"syscall"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -72,6 +73,7 @@ type Process struct {
 	Name        string
 	state       ProcessState
 	stateReason ProcessStateReason
+	stateTime   time.Time
 
 	Logger *zap.SugaredLogger
 
@@ -232,6 +234,7 @@ func (process *Process) setState(to ProcessState, reason ProcessStateReason) err
 		process.Logger.Infof("%s: %s (%s) -> %s (%s)", process.Name, process.state, process.stateReason, to, reason)
 		process.state = to
 		process.stateReason = reason
+		process.stateTime = time.Now()
 
 		return nil
 	} else {
