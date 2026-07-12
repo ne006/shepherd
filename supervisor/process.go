@@ -162,9 +162,15 @@ func (process *Process) GetUIString() string {
 	}
 
 	if process.Process == nil {
-		return fmt.Sprintf("%s %s", process.Name, processState)
+		return fmt.Sprintf("%s...%s", process.Name, processState)
 	} else {
-		return fmt.Sprintf("%s %s %v\n", process.Name, processState, process.Process.Pid)
+		return fmt.Sprintf(
+			"%s...%s...%s ago...%v\n",
+			process.Name,
+			processState,
+			time.Since(process.stateTime).Truncate(time.Second),
+			process.Process.Pid,
+		)
 	}
 }
 
