@@ -189,8 +189,18 @@ func Restart(cl *CommandListener, args []string) (string, error) {
 
 }
 
-func List(cl *CommandListener, _ []string) (string, error) {
-	return fmt.Sprintf("%s\n", cl.Supervisor.GetUIString()), nil
+func List(cl *CommandListener, args []string) (string, error) {
+	if len(args) > 0 {
+		path := args[0]
+
+		if child := cl.Supervisor.FindChild(path); child != nil {
+			return fmt.Sprintf("%s\n", (*child).GetUIString()), nil
+		} else {
+			return "", fmt.Errorf("%s is not defined", path)
+		}
+	} else {
+		return fmt.Sprintf("%s\n", cl.Supervisor.GetUIString()), nil
+	}
 }
 
 func Load(cl *CommandListener, args []string) (string, error) {

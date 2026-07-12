@@ -41,7 +41,7 @@ func usage() string {
 		- start <path>
 		- restart <path>
 		- stop <path>
-		- list
+		- list <path>
 		- load <configPath>
 	`)
 }
