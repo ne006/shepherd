@@ -17,7 +17,7 @@ func (s *Supervisor) LoadApp(app App) error {
 }
 
 func (s *Supervisor) Start(spath string) error {
-	if child := s.findChild(spath); child != nil {
+	if child := s.FindChild(spath); child != nil {
 		return (*child).Start()
 	} else {
 		return fmt.Errorf("%s is not defined", spath)
@@ -25,7 +25,7 @@ func (s *Supervisor) Start(spath string) error {
 }
 
 func (s *Supervisor) Stop(spath string) error {
-	if child := s.findChild(spath); child != nil {
+	if child := s.FindChild(spath); child != nil {
 		return (*child).Stop(StateReasonUser)
 	} else {
 		return fmt.Errorf("%s is not defined", spath)
@@ -33,7 +33,7 @@ func (s *Supervisor) Stop(spath string) error {
 }
 
 func (s *Supervisor) Restart(spath string) error {
-	if child := s.findChild(spath); child != nil {
+	if child := s.FindChild(spath); child != nil {
 		return (*child).Restart(StateReasonUser)
 	} else {
 		return fmt.Errorf("%s is not defined", spath)
@@ -44,7 +44,7 @@ func (s *Supervisor) GetUIString() string {
 	return s.svtree.GetUIString()
 }
 
-func (s *Supervisor) findChild(spath string) *SupervisionUnit {
+func (s *Supervisor) FindChild(spath string) *SupervisionUnit {
 	path := splitPath(spath)
 
 	var current SupervisionUnit
